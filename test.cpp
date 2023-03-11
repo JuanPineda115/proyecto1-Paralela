@@ -84,6 +84,7 @@ int main(int argc, char** argv)
     glutInitWindowSize(screenWidth, screenHeight);
     glutInitWindowPosition(100, 100);
     glutCreateWindow("Screensaver");
+    glutDisplayFunc(drawScene);
 
     // Inicializar OpenGL
     init();
