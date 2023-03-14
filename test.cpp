@@ -12,10 +12,33 @@ double ballX = 0.0;
 double ballY = 0.0;
 double ballVelocityX = 0.02;
 double ballVelocityY = 0.03;
+// Variables para contar los frames
+int frameCount = 0;
+int fps = 0;
+int currentTime = 0;
+int previousTime = 0;
+
 
 // Función de dibujo del screensaver
 void drawScene()
 {
+    // Incrementar el contador de frames
+    frameCount++;
+
+    // Obtener el tiempo actual en milisegundos
+    currentTime = glutGet(GLUT_ELAPSED_TIME);
+
+    // Calcular el tiempo transcurrido desde la última actualización de FPS
+    int elapsedTime = currentTime - previousTime;
+
+    // Actualizar el FPS si ha pasado un segundo desde la última actualización
+    if (elapsedTime > 1000)
+    {
+        fps = frameCount / (elapsedTime / 1000.0);
+        frameCount = 0;
+        previousTime = currentTime;
+    }
+
     // Borrar la pantalla
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -31,6 +54,26 @@ void drawScene()
     }
     glEnd();
     glPopMatrix();
+
+    // Mostrar el FPS en la pantalla
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0, screenWidth, 0, screenHeight);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    glColor3f(1.0, 1.0, 1.0);
+    glRasterPos2i(10, 10);
+    std::string fpsStr = "FPS: " + std::to_string(fps);
+    for (int i = 0; i < fpsStr.length(); i++)
+    {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, fpsStr[i]);
+    }
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
 
     // Intercambiar los buffers
     glutSwapBuffers();
