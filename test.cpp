@@ -20,6 +20,9 @@ double ballY[N];
 double ballVelocityX[N];
 double ballVelocityY[N];
 
+//Colores de cada pelota
+float ballColor[N][3];
+
 
 // Variables para contar los frames
 int frameCount = 0;
@@ -27,12 +30,18 @@ int fps = 0;
 int currentTime = 0;
 int previousTime = 0;
 
+// Función para generar un color aleatorio
+void randomColor(float color[3])
+{
+    color[0] = ((double)rand() / RAND_MAX);
+    color[1] = ((double)rand() / RAND_MAX);
+    color[2] = ((double)rand() / RAND_MAX);
+}
+
 
 // Función de dibujo del screensaver
 void drawScene()
 {
-
-
     // Incrementar el contador de frames
     frameCount++;
 
@@ -57,7 +66,7 @@ void drawScene()
     for (int i = 0; i < N; i++) {
         glPushMatrix();
         glTranslated(ballX[i], ballY[i], 0.0);
-        glColor3f(1.0, 1.0, 1.0);
+        glColor3f(ballColor[i][0], ballColor[i][1], ballColor[i][2]);
         glBegin(GL_TRIANGLE_FAN);
         glVertex2f(0.0, 0.0);
         for (int i = 0; i <= 360; i++)
@@ -136,6 +145,11 @@ void init()
         ballVelocityX[i] = ((double)rand() / RAND_MAX) * 0.04 - 0.02;
         ballVelocityY[i] = ((double)rand() / RAND_MAX) * 0.04 - 0.02;
     }
+
+    for (int i = 0; i < N; i++) {
+        randomColor(ballColor[i]);
+    }
+
 
     // Definir el color de fondo
     glClearColor(0.0, 0.0, 0.0, 0.0);
