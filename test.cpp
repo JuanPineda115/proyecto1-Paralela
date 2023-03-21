@@ -173,6 +173,8 @@ int main(int argc, char** argv)
     glutInitWindowSize(screenWidth, screenHeight);
     glutInitWindowPosition(100, 100);
     glutCreateWindow("Screensaver");
+
+
     glutDisplayFunc(drawScene);
 
     // Inicializar OpenGL
@@ -181,11 +183,22 @@ int main(int argc, char** argv)
     // Configurar el generador de números aleatorios
     srand(time(0));
 
+    clock_t start = clock();
+
+
     // Habilitar la animación
     glutIdleFunc(drawScene);
 
+    clock_t end = clock();
+    
+    // Calcular el tiempo transcurrido
+    double timeElapsed = double(end - start) / CLOCKS_PER_SEC;
+    std::cout << "Tiempo de ejecución: " << timeElapsed << " segundos" << std::endl;
+
+
     // Ejecutar el ciclo principal del programa
     glutMainLoop();
+
 
     // Salir del programa
     return 0;
