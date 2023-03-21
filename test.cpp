@@ -8,10 +8,19 @@
 int screenWidth = 800;
 int screenHeight = 600;
 double ballRadius = 0.1;
-double ballX = 0.0;
-double ballY = 0.0;
-double ballVelocityX = 0.02;
-double ballVelocityY = 0.03;
+
+//cantidad de pelotas
+const int N = 5;
+
+// Posiciones iniciales de las pelotas
+double ballX[N];
+double ballY[N];
+
+// velocidad de cada pelota
+double ballVelocityX[N];
+double ballVelocityY[N];
+
+
 // Variables para contar los frames
 int frameCount = 0;
 int fps = 0;
@@ -22,6 +31,8 @@ int previousTime = 0;
 // Función de dibujo del screensaver
 void drawScene()
 {
+
+
     // Incrementar el contador de frames
     frameCount++;
 
@@ -43,17 +54,19 @@ void drawScene()
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Dibujar la pelota
-    glPushMatrix();
-    glTranslated(ballX, ballY, 0.0);
-    glColor3f(1.0, 1.0, 1.0);
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex2f(0.0, 0.0);
-    for (int i = 0; i <= 360; i++)
-    {
-        glVertex2f(ballRadius * cos(i * M_PI / 180.0), ballRadius * sin(i * M_PI / 180.0));
+    for (int i = 0; i < N; i++) {
+        glPushMatrix();
+        glTranslated(ballX[i], ballY[i], 0.0);
+        glColor3f(1.0, 1.0, 1.0);
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex2f(0.0, 0.0);
+        for (int i = 0; i <= 360; i++)
+        {
+            glVertex2f(ballRadius * cos(i * M_PI / 180.0), ballRadius * sin(i * M_PI / 180.0));
+        }
+        glEnd();
+        glPopMatrix();
     }
-    glEnd();
-    glPopMatrix();
 
     // Mostrar el FPS en la pantalla
     glMatrixMode(GL_PROJECTION);
@@ -78,36 +91,52 @@ void drawScene()
     // Intercambiar los buffers
     glutSwapBuffers();
 
-    // Actualizar la posición de la pelota
-    ballX += ballVelocityX;
-    ballY += ballVelocityY;
 
-    // Hacer rebotar la pelota
-    if (ballX > 1.0 - ballRadius)
-    {
-        ballX = 1.0 - ballRadius;
-        ballVelocityX = -ballVelocityX;
-    }
-    else if (ballX < -1.0 + ballRadius)
-    {
-        ballX = -1.0 + ballRadius;
-        ballVelocityX = -ballVelocityX;
-    }
-    if (ballY > 1.0 - ballRadius)
-    {
-        ballY = 1.0 - ballRadius;
-        ballVelocityY = -ballVelocityY;
-    }
-    else if (ballY < -1.0 + ballRadius)
-    {
-        ballY = -1.0 + ballRadius;
-        ballVelocityY = -ballVelocityY;
+
+    for (int i = 0; i < N; i++) {
+
+        // Actualizar la posición de la pelota
+        ballX[i] += ballVelocityX[i];
+        ballY[i] += ballVelocityY[i];
+
+        // Hacer rebotar la pelota
+        if (ballX[i] > 1.0 - ballRadius)
+        {
+            ballX[i] = 1.0 - ballRadius;
+            ballVelocityX[i] = -ballVelocityX[i];
+        }
+        else if (ballX[i] < -1.0 + ballRadius)
+        {
+            ballX[i] = -1.0 + ballRadius;
+            ballVelocityX[i] = -ballVelocityX[i];
+        }
+        if (ballY[i] > 1.0 - ballRadius)
+        {
+            ballY[i] = 1.0 - ballRadius;
+            ballVelocityY[i] = -ballVelocityY[i];
+        }
+        else if (ballY[i] < -1.0 + ballRadius)
+        {
+            ballY[i] = -1.0 + ballRadius;
+            ballVelocityY[i] = -ballVelocityY[i];
+        }
     }
 }
-
 // Función de inicialización de OpenGL
 void init()
 {
+
+    // Declaro las posiciones iniciales aleatorias de las pelotas
+    for (int i = 0; i < N; i++) {
+        ballX[i] = ((double)rand() / RAND_MAX) * 2.0 - 1.0;
+        ballY[i] = ((double)rand() / RAND_MAX) * 2.0 - 1.0;
+    }
+
+    for (int i = 0; i < N; i++) {
+        ballVelocityX[i] = ((double)rand() / RAND_MAX) * 0.04 - 0.02;
+        ballVelocityY[i] = ((double)rand() / RAND_MAX) * 0.04 - 0.02;
+    }
+
     // Definir el color de fondo
     glClearColor(0.0, 0.0, 0.0, 0.0);
 
@@ -121,6 +150,9 @@ void init()
 // Función principal
 int main(int argc, char** argv)
 {
+
+
+
     // Inicializar el sistema de ventana de OpenGL
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
