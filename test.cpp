@@ -5,7 +5,7 @@
 // Para compilar en Windows
 #include <GL/glut.h>
 // Para compilar en Linux
-#include <GLUT/glut.h>
+// #include <GLUT/glut.h>
 
 // Definición de variables globales
 int screenWidth = 800;

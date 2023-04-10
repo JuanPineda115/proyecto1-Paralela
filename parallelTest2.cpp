@@ -1,12 +1,11 @@
+// En este archivo paralelizamos el programa al momento de calcular la 
+// posición de las pelotas usando pragma omp parallel for
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
-// Para compilar en Windows
 #include <GL/glut.h>
-// Para compilar en Linux
-#include <GLUT/glut.h>
-
+// #include <GLUT/glut.h>
 // Add OpenMP header
 #include <omp.h>
 
@@ -15,7 +14,7 @@ int screenWidth = 800;
 int screenHeight = 600;
 double ballRadius = 0.1;
 
-//cantidad de pelotas
+// cantidad de pelotas
 const int N = 5;
 
 // Posiciones iniciales de las pelotas
@@ -26,7 +25,7 @@ double ballY[N];
 double ballVelocityX[N];
 double ballVelocityY[N];
 
-//Colores de cada pelota
+// Colores de cada pelota
 float ballColor[N][3];
 
 // Variables para contar los frames
@@ -92,16 +91,19 @@ void drawScene()
     glColor3f(1.0, 1.0, 1.0);
     glRasterPos2i(10, 10);
     std::string fpsStr = "FPS: " + std::to_string(fps);
-    for (int i = 0; i < fpsStr.length(); i++)
+    for (char c : fpsStr)
     {
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, fpsStr[i]);
-            glPopMatrix();
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, c);
+    }
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
     glMatrixMode(GL_MODELVIEW);
 
     // Intercambiar los buffers
     glutSwapBuffers();
 
-    // Use OpenMP to parallelize ball position update and bouncing
+    // Usar OpenMP para paralelizar el cálculo de la posición de las pelotas
     #pragma omp parallel for
     for (int i = 0; i < N; i++) {
         // Actualizar la posición de la pelota
@@ -129,22 +131,25 @@ void drawScene()
             ballY[i] = -1.0 + ballRadius;
             ballVelocityY[i] = -ballVelocityY[i];
         }
-    }
+    }    
 }
 
 // Función de inicialización de OpenGL
 void init()
 {
     // Declaro las posiciones iniciales aleatorias de las pelotas
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++)
+    {
         ballX[i] = ((double)rand() / RAND_MAX) * 2.0 - 1.0;
         ballY[i] = ((double)rand() / RAND_MAX) * 2.0 - 1.0;
     }
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++)
+    {
         ballVelocityX[i] = ((double)rand() / RAND_MAX) * 0.04 - 0.02;
         ballVelocityY[i] = ((double)rand() / RAND_MAX) * 0.04 - 0.02;
     }
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++)
+    {
         randomColor(ballColor[i]);
     }
 
@@ -159,7 +164,7 @@ void init()
 }
 
 // Función principal
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     // Inicializar el sistema de ventana de OpenGL
     glutInit(&argc, argv);
@@ -168,6 +173,18 @@ int main(int argc, char** argv)
     glutInitWindowPosition(100, 100);
     glutCreateWindow("Screensaver");
     glutDisplayFunc(drawScene);
+
+    // Check if the number of threads is provided as a command-line argument
+    if (argc < 2) {
+        std::cerr << "Usage: " << argv[0] << " <number_of_threads>" << std::endl;
+        return 1;
+    }
+
+    // Parse the number of threads from the command-line argument
+    int numThreads = std::stoi(argv[1]);
+
+    // Set the number of threads for OpenMP
+    omp_set_num_threads(numThreads);
 
     // Inicializar OpenGL
     init();
@@ -189,5 +206,3 @@ int main(int argc, char** argv)
 
     return 0;
 }
-
-
