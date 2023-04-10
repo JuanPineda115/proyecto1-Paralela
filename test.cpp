@@ -2,7 +2,10 @@
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
+// Para compilar en Windows
 #include <GL/glut.h>
+// Para compilar en Linux
+#include <GLUT/glut.h>
 
 // Definición de variables globales
 int screenWidth = 800;

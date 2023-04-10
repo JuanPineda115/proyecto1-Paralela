@@ -1,6 +1,3 @@
-// Este programa ejecuta el código de manera secuencial
-// Muestra varias pelotas que rebotan en la pantalla, cambian de dirección y color de manera aleatoria
-
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -9,6 +6,9 @@
 #include <GL/glut.h>
 // Para compilar en Linux
 #include <GLUT/glut.h>
+
+// Add OpenMP header
+#include <omp.h>
 
 // Definición de variables globales
 int screenWidth = 800;
@@ -29,7 +29,6 @@ double ballVelocityY[N];
 //Colores de cada pelota
 float ballColor[N][3];
 
-
 // Variables para contar los frames
 int frameCount = 0;
 int fps = 0;
@@ -43,7 +42,6 @@ void randomColor(float color[3])
     color[1] = ((double)rand() / RAND_MAX);
     color[2] = ((double)rand() / RAND_MAX);
 }
-
 
 // Función de dibujo del screensaver
 void drawScene()
@@ -97,14 +95,14 @@ void drawScene()
     for (int i = 0; i < fpsStr.length(); i++)
     {
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, fpsStr[i]);
-    }
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
+            glPopMatrix();
     glMatrixMode(GL_MODELVIEW);
 
     // Intercambiar los buffers
     glutSwapBuffers();
+
+    // Use OpenMP to parallelize ball position update and bouncing
+    #pragma omp parallel for
     for (int i = 0; i < N; i++) {
         // Actualizar la posición de la pelota
         ballX[i] += ballVelocityX[i];
@@ -183,12 +181,13 @@ int main(int argc, char** argv)
     clock_t end = clock();
 
     // Calcular el tiempo transcurrido
-    double timeElapsed = double(end - start) / CLOCKS_PER_SEC;
-    std::cout << "Tiempo de ejecución: " << timeElapsed << " segundos" << std::endl;
+    double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+    std::cout << "Tiempo transcurrido: " << elapsed_secs << " segundos" << std::endl;
 
-    // Ejecutar el ciclo principal del programa
+    // Iniciar el bucle principal
     glutMainLoop();
 
-    // Salir del programa
     return 0;
 }
+
+
