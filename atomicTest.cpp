@@ -1,21 +1,21 @@
-// Este programa ejecuta el código de manera secuencial
-// Muestra varias pelotas que rebotan en la pantalla, cambian de dirección y color de manera aleatoria
-
+// En este archivo paralelizamos el programa al momento de calcular la 
+// posición de las pelotas usando pragma omp parallel for
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
-// Para compilar en Windows
 #include <GL/glut.h>
-// Para compilar en Linux
-#include <GLUT/glut.h>
+// #include <GLUT/glut.h>
+// Add OpenMP header
+#include <omp.h>
 
 // Definición de variables globales
 int screenWidth = 800;
-int screenHeight = 600;double ballRadius = 0.1;
+int screenHeight = 600;
+double ballRadius = 0.1;
 
-//cantidad de pelotas
-const int N = 5;
+// cantidad de pelotas
+const int N = 100;
 
 // Posiciones iniciales de las pelotas
 double ballX[N];
@@ -25,9 +25,8 @@ double ballY[N];
 double ballVelocityX[N];
 double ballVelocityY[N];
 
-//Colores de cada pelota
+// Colores de cada pelota
 float ballColor[N][3];
-
 
 // Variables para contar los frames
 int frameCount = 0;
@@ -43,11 +42,11 @@ void randomColor(float color[3])
     color[2] = ((double)rand() / RAND_MAX);
 }
 
-
 // Función de dibujo del screensaver
 void drawScene()
 {
     // Incrementar el contador de frames
+    #pragma omp atomic
     frameCount++;
 
     // Obtener el tiempo actual en milisegundos
@@ -93,9 +92,9 @@ void drawScene()
     glColor3f(1.0, 1.0, 1.0);
     glRasterPos2i(10, 10);
     std::string fpsStr = "FPS: " + std::to_string(fps);
-    for (int i = 0; i < fpsStr.length(); i++)
+    for (char c : fpsStr)
     {
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, fpsStr[i]);
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, c);
     }
     glPopMatrix();
     glMatrixMode(GL_PROJECTION);
@@ -104,9 +103,14 @@ void drawScene()
 
     // Intercambiar los buffers
     glutSwapBuffers();
+
+    // Usar OpenMP para paralelizar el cálculo de la posición de las pelotas
+    #pragma omp parallel for
     for (int i = 0; i < N; i++) {
         // Actualizar la posición de la pelota
+        #pragma omp atomic
         ballX[i] += ballVelocityX[i];
+        #pragma omp atomic
         ballY[i] += ballVelocityY[i];
 
         // Hacer rebotar la pelota
@@ -130,25 +134,25 @@ void drawScene()
             ballY[i] = -1.0 + ballRadius;
             ballVelocityY[i] = -ballVelocityY[i];
         }
-    }
+    }    
 }
 
 // Función de inicialización de OpenGL
 void init()
 {
     // Declaro las posiciones iniciales aleatorias de las pelotas
-    for (int i = 0; i < N; i++) {
+    #pragma omp parallel for
+    for (int i = 0; i < N; i++)
+    {
         ballX[i] = ((double)rand() / RAND_MAX) * 2.0 - 1.0;
         ballY[i] = ((double)rand() / RAND_MAX) * 2.0 - 1.0;
-    }
-    for (int i = 0; i < N; i++) {
+
         ballVelocityX[i] = ((double)rand() / RAND_MAX) * 0.04 - 0.02;
         ballVelocityY[i] = ((double)rand() / RAND_MAX) * 0.04 - 0.02;
-    }
-    for (int i = 0; i < N; i++) {
-        randomColor(ballColor[i]);
-    }
 
+        randomColor(ballColor[i]);
+
+    }
     // Definir el color de fondo
     glClearColor(0.0, 0.0, 0.0, 0.0);
 
@@ -160,7 +164,7 @@ void init()
 }
 
 // Función principal
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     // Inicializar el sistema de ventana de OpenGL
     glutInit(&argc, argv);
@@ -170,24 +174,41 @@ int main(int argc, char** argv)
     glutCreateWindow("Screensaver");
     glutDisplayFunc(drawScene);
 
+    // Check if the number of threads is provided as a command-line argument
+    if (argc < 2) {
+        std::cerr << "Usage: " << argv[0] << " <number_of_threads>" << std::endl;
+        return 1;
+    }else if (std::stoi(argv[1]) < 1) {
+        std::cerr << "The number of threads must be greater than 0" << std::endl;
+        return 1;
+    }
+
+    // Parse the number of threads from the command-line argument
+    int numThreads = std::stoi(argv[1]);
+
+    // Set the number of threads for OpenMP
+    omp_set_num_threads(numThreads);
+
+    clock_t start = clock();
+
     // Inicializar OpenGL
     init();
 
     // Configurar el generador de números aleatorios
     srand(time(0));
-    clock_t start = clock();
+
+    // Habilitar la animación
 
     // Habilitar la animación
     glutIdleFunc(drawScene);
     clock_t end = clock();
 
     // Calcular el tiempo transcurrido
-    double timeElapsed = double(end - start) / CLOCKS_PER_SEC;
-    std::cout << "Tiempo de ejecución: " << timeElapsed << " segundos" << std::endl;
+    double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+    std::cout << "Tiempo transcurrido: " << elapsed_secs << " segundos" << std::endl;
 
-    // Ejecutar el ciclo principal del programa
+    // Iniciar el bucle principal
     glutMainLoop();
 
-    // Salir del programa
     return 0;
 }

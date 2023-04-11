@@ -1,6 +1,3 @@
-// Este programa ejecuta el código de manera secuencial
-// Muestra varias pelotas que rebotan en la pantalla, cambian de dirección y color de manera aleatoria
-
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -8,14 +5,15 @@
 // Para compilar en Windows
 #include <GL/glut.h>
 // Para compilar en Linux
-#include <GLUT/glut.h>
+// #include <GLUT/glut.h>
 
 // Definición de variables globales
 int screenWidth = 800;
-int screenHeight = 600;double ballRadius = 0.1;
+int screenHeight = 600;
+double ballRadius = 0.1;
 
 //cantidad de pelotas
-const int N = 5;
+const int N = 10000;
 
 // Posiciones iniciales de las pelotas
 double ballX[N];
@@ -104,7 +102,11 @@ void drawScene()
 
     // Intercambiar los buffers
     glutSwapBuffers();
+
+
+
     for (int i = 0; i < N; i++) {
+
         // Actualizar la posición de la pelota
         ballX[i] += ballVelocityX[i];
         ballY[i] += ballVelocityY[i];
@@ -132,22 +134,25 @@ void drawScene()
         }
     }
 }
-
 // Función de inicialización de OpenGL
 void init()
 {
+
     // Declaro las posiciones iniciales aleatorias de las pelotas
     for (int i = 0; i < N; i++) {
         ballX[i] = ((double)rand() / RAND_MAX) * 2.0 - 1.0;
         ballY[i] = ((double)rand() / RAND_MAX) * 2.0 - 1.0;
     }
+
     for (int i = 0; i < N; i++) {
         ballVelocityX[i] = ((double)rand() / RAND_MAX) * 0.04 - 0.02;
         ballVelocityY[i] = ((double)rand() / RAND_MAX) * 0.04 - 0.02;
     }
+
     for (int i = 0; i < N; i++) {
         randomColor(ballColor[i]);
     }
+
 
     // Definir el color de fondo
     glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -168,25 +173,32 @@ int main(int argc, char** argv)
     glutInitWindowSize(screenWidth, screenHeight);
     glutInitWindowPosition(100, 100);
     glutCreateWindow("Screensaver");
+
+
     glutDisplayFunc(drawScene);
+    clock_t start = clock();
 
     // Inicializar OpenGL
     init();
 
     // Configurar el generador de números aleatorios
     srand(time(0));
-    clock_t start = clock();
+
+
 
     // Habilitar la animación
     glutIdleFunc(drawScene);
-    clock_t end = clock();
 
+    clock_t end = clock();
+    
     // Calcular el tiempo transcurrido
     double timeElapsed = double(end - start) / CLOCKS_PER_SEC;
     std::cout << "Tiempo de ejecución: " << timeElapsed << " segundos" << std::endl;
 
+
     // Ejecutar el ciclo principal del programa
     glutMainLoop();
+
 
     // Salir del programa
     return 0;
